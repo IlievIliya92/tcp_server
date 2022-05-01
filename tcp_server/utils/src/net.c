@@ -58,7 +58,7 @@ int net_get_ipv4_from_iface(const char *iface, ip_parser_t *ipv4)
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (fd < 0)
     {
-        fprintf(stderr, "[%s] Opening socket failed! (%s)", __func__, strerror(errno));
+        fprintf(stderr, "[%s] Opening socket failed! (%s)\n", __func__, strerror(errno));
         return -1;
     }
 
@@ -67,15 +67,16 @@ int net_get_ipv4_from_iface(const char *iface, ip_parser_t *ipv4)
     strncpy(ifr.ifr_name, iface, IFNAMSIZ-1);
     if (ioctl(fd, SIOCGIFADDR, &ifr) < 0)
     {
-        fprintf(stderr, "[%s] Ioctl operation failed! (%s)", __func__, strerror(errno));
+        fprintf(stderr, "[%s] Ioctl operation failed! (%s)\n", __func__, strerror(errno));
         ret = -1;
         goto exit;
     }
 
-    if (!net_parse_ipv4(inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr),
-                         ipv4))
+    ret = net_parse_ipv4(inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr),
+                         ipv4);
+    if (ret == -1)
     {
-        fprintf(stderr, "[%s] Failed to obtain valid ipv4!", __func__);
+        fprintf(stderr, "[%s] Failed to obtain valid ipv4! (%s)\n", __func__, strerror(errno));
         ret = -1;
     }
     else
