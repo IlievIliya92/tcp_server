@@ -1,4 +1,5 @@
-/*  =========================================================================
+/*
+    =========================================================================
     =========================================================================
 */
 
@@ -22,11 +23,14 @@
 /******************************** LOCAL DEFINES *******************************/
 #define MODULE_NAME  "tcp_server_server_core"
 
+#define TCP_SERVER_BACKLOG  10
 /*********************************** TYPEDEFS *********************************/
 //  Structure of our class
 
 struct _tcp_server_t {
     int sock_fd;
+
+    int workers;
 };
 
 /************************* LOCAL FUNCTIONS DEFINITIONS ************************/
@@ -98,16 +102,78 @@ tcp_server_destroy (tcp_server_t **self_p)
     }
 }
 
+
+int
+tcp_server_sock_set_rcv_timeout(tcp_server_t *self_p,
+                                int timeout)
+{
+    assert(self_p);
+
+}
+
+int
+tcp_server_sock_set_send_timeout(tcp_server_t *self_p,
+                                int timeout)
+{
+    assert(self_p);
+
+}
+
 int
 tcp_server_init(tcp_server_t *self_p,
-                const char *server_iface)
+                const char *server_iface,
+                int server_port)
 {
     assert(self_p);
     assert(server_iface);
 
     int ret = 0;
+    struct sockaddr_in saddr;
+    ip_parser_t sipv4;
 
-    return ret;
+    if (!net_get_ipv4_from_iface(server_iface, &sipv4))
+    {
+        LOG_MSG(ERR, "Failed to obtain IP address for %s", server_iface);
+        return -1;
+    }
+
+    self_p->sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (self_p->sock_fd == -1)
+    {
+        LOG_MSG(ERR, "Failed to create TCP server socket! (%s)", strerror(errno));
+        return -1;
+    }
+
+    /* reuse sock */
+    int optval = 1;
+    ret = setsockopt(self_p->sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    if (ret == -1)
+    {
+        LOG_MSG(ERR, "Failed to set sock option SO_REUSEADDR! (%s)", strerror(errno));
+        close(self_p->sock_fd);
+        return -1;
+    }
+
+    /* Bind the socket */
+    saddr.sin_family = AF_INET;
+    saddr.sin_addr.s_addr = inet_addr(sipv4.ip_str);
+    saddr.sin_port = htons(server_port);
+    ret = bind(self_p->sock_fd, (struct sockaddr *)&saddr, sizeof(saddr));
+    if (ret == -1) {
+        LOG_MSG(ERR, "bind failed! (%s)\n", strerror(errno));
+        close(self_p->sock_fd);
+        return -1;
+    }
+
+    ret = listen(self_p->sock_fd, TCP_SERVER_BACKLOG);
+    if (ret == -1)
+    {
+        LOG_MSG(ERR, "listen failed! (%s)", strerror(errno));
+        close(self_p->sock_fd);
+        return -1;
+    }
+
+    return 0;
 }
 
 int
