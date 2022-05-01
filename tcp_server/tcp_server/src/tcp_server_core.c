@@ -131,7 +131,8 @@ tcp_server_init(tcp_server_t *self_p,
     struct sockaddr_in saddr;
     ip_parser_t sipv4;
 
-    if (!net_get_ipv4_from_iface(server_iface, &sipv4))
+    ret = net_get_ipv4_from_iface(server_iface, &sipv4);
+    if (ret == -1)
     {
         LOG_MSG(ERR, "Failed to obtain IP address for %s", server_iface);
         return -1;
@@ -207,9 +208,13 @@ tcp_server_test (bool verbose)
 {
     LOG_MSG(TRACE, "Running %s", __func__);
 
+    int port = 9080;
+    const char *iface = "lo";
+
     /* Create new instance of a server */
-    tcp_server_t *server = tcp_server_new();
+    tcp_server_t *self = tcp_server_new();
+    tcp_server_init(self, iface, port);
 
     /* Destroy server */
-    tcp_server_destroy(&server);
+    tcp_server_destroy(&self);
 }
