@@ -1,4 +1,5 @@
 /******************************** INCLUDE FILES *******************************/
+#include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/prctl.h>  /* prctl(), PR_SET_NAME */
 #include <unistd.h>
@@ -87,8 +88,9 @@ worker_pool_new (int workers_n)
     worker_pool_t *self = (worker_pool_t *) smalloc (sizeof (worker_pool_t));
     assert (self);
 
-
     self->workers_n = workers_n;
+    self->avail_workers_n = self->workers_n;
+
     self->worker = (worker_t *) smalloc(self->workers_n * sizeof(worker_t));
     if (self->worker == NULL)
     {
@@ -162,6 +164,106 @@ worker_pool_dispatch_worker(worker_pool_t *self_p,
     worker_pool_routine();
 }
 
+void
+worker_pool_worker_fd_set(worker_pool_t *self_p,
+                          int worker_id,
+                          fd_set fd)
+{
+    FD_SET(self_p->worker[worker_id].pipefd, &fd);
+}
+
+int
+worker_pool_worker_fd_get(worker_pool_t *self_p,
+                          int worker_id)
+{
+    return self_p->worker[worker_id].pipefd;
+}
+
+int
+worker_pool_workers_avail_get(worker_pool_t *self_p)
+{
+    return self_p->avail_workers_n;
+}
+
+int
+worker_pool_workers_submit_conn(worker_pool_t *self_p, int conn)
+{
+    int n = 0;
+    int i = 0;
+
+    for (i = 0; i < self_p->workers_n; i++)
+    {
+        if (self_p->worker[i].status == 0)
+        {
+            /* available */
+            break;
+        }
+    }
+
+    if (i == self_p->workers_n)
+    {
+        LOG_MSG(ERR, "no available children");
+    }
+
+    self_p->worker[i].status = 1;   /* mark child as busy */
+    self_p->worker[i].count++;
+    self_p->avail_workers_n--;
+
+    n = ipc_fd_write(self_p->worker[i].pipefd, "p", 1, conn);
+
+    return n;
+}
+
+int
+worker_pool_workers_find_free(worker_pool_t *self_p, int nsel, fd_set *rset)
+{
+    int i = 0;
+    int n = 0;
+    char rc = 0;
+
+    for (i = 0; i < self_p->workers_n; i++)
+    {
+        if (FD_ISSET(self_p->worker[i].pipefd, rset))
+        {
+            if ((n = read(self_p->worker[i].pipefd, &rc, 1)) == 0)
+            {
+                LOG_MSG(ERR, "child %d terminated unexpectedly", i);
+                /* Server restart or respawn a worker */
+                //exit(-1);
+                break;
+            }
+
+            /* job done
+              * LOG_MSG(DEBUG, "Worker reported %c", rc);
+              */
+            self_p->worker[i].status = 0;
+            self_p->avail_workers_n++;
+            if (--nsel == 0)
+            {
+                break;  /* all done with select() results */
+            }
+        }
+    }
+}
+
+int
+worker_pool_workers_terminate(worker_pool_t *self_p)
+{
+    int i = 0;
+
+    /* terminate all workers */
+    for (i = 0; i < self_p->workers_n; i++)
+    {
+        //LOG_MSG(INFO, "Stopping worker %ld", self_p->worker[i].pid);
+        write(self_p->worker[i].pipefd, "s", 1);
+    }
+
+    while (wait(NULL) > 0)
+    {
+        /* wait for all worker children */
+        ;
+    }
+}
 
 void worker_pool_test(bool verbose)
 {

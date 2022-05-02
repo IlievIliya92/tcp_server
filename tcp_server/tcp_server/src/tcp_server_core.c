@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
@@ -33,16 +34,30 @@ struct _tcp_server_t {
 
     int workers_n;
     worker_pool_t *wp;
+
+    /* select mechanism */
+    fd_set masterset;
+
+    int maxfdp;
+    int nready;
+    struct timeval select_tv;
 };
 
 /************************* LOCAL FUNCTIONS DEFINITIONS ************************/
 
 /********************************* LOCAL DATA *********************************/
-
+/* State (volatile since we are stopping this from keyboard isr)*/
+static volatile bool SERVER_STOP = true;
 /******************************* INTERFACE DATA *******************************/
 
 /******************************* LOCAL FUNCTIONS ******************************/
+static void tcp_server_sig_hndlr(int signum)
+{
+    SERVER_STOP = true;
 
+    LOG_MSG(INFO, "Server shuting down...");
+
+}
 /******************************* PRIVATE METHODS ******************************/
 
 //  --------------------------------------------------------------------------
@@ -132,6 +147,7 @@ tcp_server_init(tcp_server_t *self_p,
     assert(self_p);
     assert(server_iface);
 
+    int i = 0;
     int ret = 0;
     struct sockaddr_in saddr;
     ip_parser_t sipv4;
@@ -178,9 +194,27 @@ tcp_server_init(tcp_server_t *self_p,
         close(self_p->sock_fd);
         return -1;
     }
+    /* Clear the descriptor set */
+    FD_ZERO(&self_p->masterset);
+    FD_SET(self_p->sock_fd, &self_p->masterset);
+    self_p->maxfdp = self_p->sock_fd + 1;
 
+    /* Create worker pool */
     self_p->workers_n = workers_n;
     self_p->wp = worker_pool_new(self_p->workers_n);
+
+    /* Prefork all the workers */
+    for (i = 0; i < self_p->workers_n; i++)
+    {
+        /* parent returns */
+        worker_pool_dispatch_worker(self_p->wp, i, self_p->sock_fd);
+        worker_pool_worker_fd_set(self_p->wp, i, self_p->masterset);
+        self_p->maxfdp = max(self_p->maxfdp, worker_pool_worker_fd_get(self_p->wp, i));
+    }
+
+
+    /* Register the sig handler */
+    signal(SIGINT, tcp_server_sig_hndlr);
 
     return 0;
 }
@@ -196,20 +230,68 @@ tcp_server_register_cb(tcp_server_t *self_p)
 }
 
 void
-tcp_server_process(tcp_server_t *self_p)
+tcp_server_run(tcp_server_t *self_p)
 {
     assert(self_p);
+
+    int i = 0;
+    int nsel = 0;
+    int conn = -1;
+
+    fd_set rset;
+
+    struct sockaddr_in src_addr;
+    socklen_t src_addr_len = sizeof(src_addr);
+
+    /* Start the server loop */
+    SERVER_STOP = false;
+    for (;;)
+    {
+        rset = self_p->masterset;
+
+        if (worker_pool_workers_avail_get(self_p->wp) <= 0)
+        {
+            /* turn off if no available children */
+            FD_CLR(self_p->sock_fd, &rset);
+        }
+
+        self_p->select_tv.tv_sec = 2;
+        self_p->select_tv.tv_usec = 0;
+
+        nsel = select(self_p->maxfdp, &rset, NULL, NULL, NULL);
+
+        if (SERVER_STOP)
+        {
+            FD_ZERO(&rset);
+
+            break;
+        }
+
+        /* Check for new connections */
+        if (FD_ISSET(self_p->sock_fd, &rset))
+        {
+            conn = accept(self_p->sock_fd, (struct sockaddr *)&src_addr, &src_addr_len);
+            LOG_MSG(INFO, "New connection from: %s:%d",
+                   inet_ntoa(src_addr.sin_addr),
+                   ntohs(src_addr.sin_port));
+
+            worker_pool_workers_submit_conn(self_p->wp, conn);
+
+            close(conn);
+            if (--nsel == 0)
+            {
+                continue;   /* all done with select() results */
+            }
+        }
+
+        /* Find any newly-available children */
+        worker_pool_workers_find_free(self_p->wp, nsel, &rset);
+    }
+
+    worker_pool_workers_terminate(self_p->wp);
 }
 
 //  --------------------------------------------------------------------------
-#include <signal.h>
-
-/* State (volatile since we are stopping this from keyboard isr)*/
-static volatile int SERVER_STOP;
-static void server_sig_hndlr(int signum)
-{
-    SERVER_STOP = true;
-}
 
 void
 tcp_server_test (bool verbose)
@@ -218,11 +300,13 @@ tcp_server_test (bool verbose)
 
     const char *iface = "lo";
     int port = 9080;
-    int workers = 1;
+    int workers = 2;
 
     /* Create new instance of a server */
     tcp_server_t *self = tcp_server_new();
     tcp_server_init(self, iface, port, workers);
+
+    tcp_server_run(self);
 
     /* Destroy server */
     tcp_server_destroy(&self);
