@@ -208,7 +208,7 @@ tcp_server_init(tcp_server_t *self_p,
     {
         /* parent returns */
         worker_pool_dispatch_worker(self_p->wp, i, self_p->sock_fd);
-        worker_pool_worker_fd_set(self_p->wp, i, self_p->masterset);
+        worker_pool_worker_fd_set(self_p->wp, i, &self_p->masterset);
         self_p->maxfdp = max(self_p->maxfdp, worker_pool_worker_fd_get(self_p->wp, i));
     }
 
@@ -217,16 +217,6 @@ tcp_server_init(tcp_server_t *self_p,
     signal(SIGINT, tcp_server_sig_hndlr);
 
     return 0;
-}
-
-int
-tcp_server_register_cb(tcp_server_t *self_p)
-{
-    assert(self_p);
-
-    int ret = 0;
-
-    return ret;
 }
 
 void
@@ -276,14 +266,12 @@ tcp_server_run(tcp_server_t *self_p)
                    ntohs(src_addr.sin_port));
 
             worker_pool_workers_submit_conn(self_p->wp, conn);
-
             close(conn);
             if (--nsel == 0)
             {
                 continue;   /* all done with select() results */
             }
         }
-
         /* Find any newly-available children */
         worker_pool_workers_find_free(self_p->wp, nsel, &rset);
     }
@@ -292,7 +280,6 @@ tcp_server_run(tcp_server_t *self_p)
 }
 
 //  --------------------------------------------------------------------------
-
 void
 tcp_server_test (bool verbose)
 {

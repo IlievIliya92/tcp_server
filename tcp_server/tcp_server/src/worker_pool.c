@@ -6,6 +6,7 @@
 
 #include "tcp_server_classes.h"
 
+#include "hexdump.h"
 #include "ipc_fd.h"
 #include "worker_pool.h"
 
@@ -15,10 +16,10 @@
 
 /********************************* TYPEDEF ************************************/
 typedef struct _worker_t {
-  pid_t     pid;      /* process ID */
-  int       pipefd;   /* parent's stream pipe to/from child */
-  int       status;   /* 0 = ready */
-  long      count;    /* # connections handled */
+    pid_t     pid;      /* process ID */
+    int       pipefd;   /* parent's stream pipe to/from child */
+    int       status;   /* 0 = ready */
+    long      count;    /* # connections handled */
 } worker_t;
 
 struct _worker_pool_t {
@@ -35,48 +36,6 @@ struct _worker_pool_t {
 /********************************* LOCAL DATA *********************************/
 
 /******************************* LOCAL FUNCTIONS ******************************/
-static
-void worker_pool_routine(void)
-{
-    char cmd;
-    int conn = -1;
-    ssize_t n = 0;
-
-    LOG_MSG(INFO, "Worker %ld starting ...", (long) getpid());
-
-    for (;;)
-    {
-        if ((n = ipc_fd_read(STDERR_FILENO, &cmd, 1, &conn)) == 0)
-        {
-            LOG_MSG(ERR, "read_fd returned 0");
-            break;
-        }
-
-        /* Received stop from the sig handler to break execution */
-        if (cmd == 's')
-        {
-            break;
-        }
-
-        if (conn < 0)
-        {
-            //LOG_MSG(WARNING, "Invalid connection received on ipc_fd_read");
-            continue;
-        }
-        else
-        {
-            /*
-             *  processing
-             */
-            close(conn);
-        }
-
-        /* tell the server we are done */
-        write(STDERR_FILENO, "d", 1);
-    }
-
-    exit(0);
-}
 
 /*************************** INTERFACE FUNCTIONS ******************************/
 
@@ -134,6 +93,9 @@ worker_pool_dispatch_worker(worker_pool_t *self_p,
 {
     int sockfd[2] = {0, 0};
     pid_t pid = 0;
+    char cmd;
+    int conn = -1;
+    ssize_t n = 0;
 
     socketpair(AF_LOCAL, SOCK_STREAM, 0, sockfd);
     if ((pid = fork()) > 0)
@@ -161,15 +123,56 @@ worker_pool_dispatch_worker(worker_pool_t *self_p,
     close(listenfd);
 
     /* never returns - workers routine */
-    worker_pool_routine();
+    LOG_MSG(INFO, "Worker %ld starting ...", (long) getpid());
+
+    for (;;)
+    {
+        if ((n = ipc_fd_read(STDERR_FILENO, &cmd, 1, &conn)) == 0)
+        {
+            LOG_MSG(ERR, "read_fd returned 0");
+            break;
+        }
+
+        /* Received stop from the sig handler to break execution */
+        if (cmd == 's')
+        {
+            break;
+        }
+
+        if (conn < 0)
+        {
+            //LOG_MSG(WARNING, "Invalid connection received on ipc_fd_read");
+            continue;
+        }
+        else
+        {
+            /*
+             *  processing
+             */
+            LOG_MSG(INFO, "Worker %ld processing ...", (long) getpid());
+            int rx_bytes = 0;
+            char rx_buffer[1500];
+            rx_bytes = read(conn, rx_buffer, 1500);
+            hexdump("RX Buffer", rx_buffer, rx_bytes);
+            write(conn, rx_buffer, rx_bytes);
+
+            close(conn);
+        }
+
+        LOG_MSG(INFO, "done");
+        /* tell the server we are done */
+        write(STDERR_FILENO, "d", 1);
+    }
+
+    exit(0);
 }
 
 void
 worker_pool_worker_fd_set(worker_pool_t *self_p,
                           int worker_id,
-                          fd_set fd)
+                          fd_set *fd)
 {
-    FD_SET(self_p->worker[worker_id].pipefd, &fd);
+    FD_SET(self_p->worker[worker_id].pipefd, fd);
 }
 
 int
@@ -234,8 +237,8 @@ worker_pool_workers_find_free(worker_pool_t *self_p, int nsel, fd_set *rset)
             }
 
             /* job done
-              * LOG_MSG(DEBUG, "Worker reported %c", rc);
-              */
+             * LOG_MSG(DEBUG, "Worker reported %c", rc);
+             */
             self_p->worker[i].status = 0;
             self_p->avail_workers_n++;
             if (--nsel == 0)

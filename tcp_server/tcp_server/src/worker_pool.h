@@ -31,7 +31,7 @@ worker_pool_destroy (worker_pool_t **self_p);
 void
 worker_pool_worker_fd_set(worker_pool_t *self_p,
                           int worker_id,
-                          fd_set fd);
+                          fd_set *fd);
 
 int
 worker_pool_worker_fd_get(worker_pool_t *self_p,
