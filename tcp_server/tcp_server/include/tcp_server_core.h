@@ -23,7 +23,7 @@ TCP_SERVER_EXPORT void
 
 TCP_SERVER_EXPORT int
     tcp_server_init(tcp_server_t *self_p, const char *server_iface,
-                    int server_port);
+                    int server_port, int workers_n);
 
 TCP_SERVER_EXPORT void
     tcp_server_process(tcp_server_t *self_p);

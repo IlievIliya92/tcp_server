@@ -18,6 +18,7 @@
 
 #include "tcp_server_classes.h"
 
+#include "worker_pool.h"
 #include "utils.h"
 #include "log.h"
 /******************************** LOCAL DEFINES *******************************/
@@ -30,7 +31,8 @@
 struct _tcp_server_t {
     int sock_fd;
 
-    int workers;
+    int workers_n;
+    worker_pool_t *wp;
 };
 
 /************************* LOCAL FUNCTIONS DEFINITIONS ************************/
@@ -94,6 +96,8 @@ tcp_server_destroy (tcp_server_t **self_p)
             close(self->sock_fd);
         }
 
+        worker_pool_destroy(&self->wp);
+
         LOG_MSG(TRACE, "Destroying TCP Server [%p]", self);
         //  Free object itself
         sfree (self);
@@ -122,7 +126,8 @@ tcp_server_sock_set_send_timeout(tcp_server_t *self_p,
 int
 tcp_server_init(tcp_server_t *self_p,
                 const char *server_iface,
-                int server_port)
+                int server_port,
+                int workers_n)
 {
     assert(self_p);
     assert(server_iface);
@@ -174,6 +179,9 @@ tcp_server_init(tcp_server_t *self_p,
         return -1;
     }
 
+    self_p->workers_n = workers_n;
+    self_p->wp = worker_pool_new(self_p->workers_n);
+
     return 0;
 }
 
@@ -208,12 +216,13 @@ tcp_server_test (bool verbose)
 {
     LOG_MSG(TRACE, "Running %s", __func__);
 
-    int port = 9080;
     const char *iface = "lo";
+    int port = 9080;
+    int workers = 1;
 
     /* Create new instance of a server */
     tcp_server_t *self = tcp_server_new();
-    tcp_server_init(self, iface, port);
+    tcp_server_init(self, iface, port, workers);
 
     /* Destroy server */
     tcp_server_destroy(&self);
