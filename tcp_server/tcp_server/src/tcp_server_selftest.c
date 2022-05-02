@@ -9,6 +9,7 @@
 */
 
 #include "tcp_server_classes.h"
+#include "tcp_private.h"
 
 typedef struct {
     const char *testname;           // test name, can be called from command line this way
@@ -20,8 +21,8 @@ typedef struct {
 
 static test_item_t
 all_tests [] = {
-// Tests for public classes:
     { "tcp_server", tcp_server_test, true, true, NULL },
+    { "worker_pool", worker_pool_test, true, false, NULL },
     {NULL, NULL, 0, 0, NULL}          //  Sentinel
 };
 
