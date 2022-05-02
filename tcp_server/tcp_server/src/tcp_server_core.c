@@ -19,6 +19,8 @@
 
 #include "tcp_server_classes.h"
 
+#include "generic_t.h"
+
 #include "worker_pool.h"
 #include "utils.h"
 #include "log.h"
@@ -142,6 +144,7 @@ int
 tcp_server_init(tcp_server_t *self_p,
                 const char *server_iface,
                 int server_port,
+                voidVoid_ptr_t callback,
                 int workers_n)
 {
     assert(self_p);
@@ -207,7 +210,7 @@ tcp_server_init(tcp_server_t *self_p,
     for (i = 0; i < self_p->workers_n; i++)
     {
         /* parent returns */
-        worker_pool_dispatch_worker(self_p->wp, i, self_p->sock_fd);
+        worker_pool_dispatch_worker(self_p->wp, i, self_p->sock_fd, callback);
         worker_pool_worker_fd_set(self_p->wp, i, &self_p->masterset);
         self_p->maxfdp = max(self_p->maxfdp, worker_pool_worker_fd_get(self_p->wp, i));
     }
@@ -280,6 +283,21 @@ tcp_server_run(tcp_server_t *self_p)
 }
 
 //  --------------------------------------------------------------------------
+static void server_connection_cb(void *args)
+{
+    int conn = -1;
+    int rx_bytes = 0;
+    char rx_buffer[1500];
+
+    conn = *(int *)args;
+
+    rx_bytes = read(conn, rx_buffer, 1500);
+    hexdump("RX Buffer", rx_buffer, rx_bytes);
+
+    /* Just loopback */
+    write(conn, rx_buffer, rx_bytes);
+}
+
 void
 tcp_server_test (bool verbose)
 {
@@ -291,7 +309,7 @@ tcp_server_test (bool verbose)
 
     /* Create new instance of a server */
     tcp_server_t *self = tcp_server_new();
-    tcp_server_init(self, iface, port, workers);
+    tcp_server_init(self, iface, port, server_connection_cb, workers);
 
     tcp_server_run(self);
 

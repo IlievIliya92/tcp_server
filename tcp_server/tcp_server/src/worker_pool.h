@@ -7,6 +7,8 @@
 
 #include <sys/types.h>
 
+#include "generic_t.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,7 +42,8 @@ worker_pool_worker_fd_get(worker_pool_t *self_p,
 pid_t
 worker_pool_dispatch_worker(worker_pool_t *self_p,
                             int worker_id,
-                            int listenfd);
+                            int listenfd,
+                            voidVoid_ptr_t callback);
 
 int
 worker_pool_workers_avail_get(worker_pool_t *self_p);

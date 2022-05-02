@@ -89,7 +89,8 @@ worker_pool_destroy (worker_pool_t **self_p)
 pid_t
 worker_pool_dispatch_worker(worker_pool_t *self_p,
                             int worker_id,
-                            int listenfd)
+                            int listenfd,
+                            voidVoid_ptr_t callback)
 {
     int sockfd[2] = {0, 0};
     pid_t pid = 0;
@@ -149,12 +150,7 @@ worker_pool_dispatch_worker(worker_pool_t *self_p,
             /*
              *  processing
              */
-            LOG_MSG(INFO, "Worker %ld processing ...", (long) getpid());
-            int rx_bytes = 0;
-            char rx_buffer[1500];
-            rx_bytes = read(conn, rx_buffer, 1500);
-            hexdump("RX Buffer", rx_buffer, rx_bytes);
-            write(conn, rx_buffer, rx_bytes);
+            callback((void *)&conn);
 
             close(conn);
         }
@@ -231,8 +227,7 @@ worker_pool_workers_find_free(worker_pool_t *self_p, int nsel, fd_set *rset)
             if ((n = read(self_p->worker[i].pipefd, &rc, 1)) == 0)
             {
                 LOG_MSG(ERR, "child %d terminated unexpectedly", i);
-                /* Server restart or respawn a worker */
-                //exit(-1);
+                // exit(-1);
                 break;
             }
 
