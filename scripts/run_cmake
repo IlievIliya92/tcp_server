@@ -34,10 +34,6 @@ build() {
         echo "Running native build (x86)"
         cmake ${ROOT_CMAKE_DIR} ..
         make
-        # Set extended capbilities for native run so we can bind/open sockets
-        # without sudoing
-        echo "Setting extended capabilities for '${SELFTEST_BINARY_NAME}' "
-        sudo setcap "CAP_SYS_NICE+eip CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip" ${BUILD_DIR}/${SELFTEST_BINARY_NAME}
     fi
 }
 

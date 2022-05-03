@@ -185,7 +185,7 @@ tcp_server_init(tcp_server_t *self_p,
     saddr.sin_port = htons(server_port);
     ret = bind(self_p->sock_fd, (struct sockaddr *)&saddr, sizeof(saddr));
     if (ret == -1) {
-        LOG_MSG(ERR, "bind failed! (%s)\n", strerror(errno));
+        LOG_MSG(ERR, "bind failed! (%s)", strerror(errno));
         close(self_p->sock_fd);
         return -1;
     }
@@ -226,6 +226,7 @@ void
 tcp_server_run(tcp_server_t *self_p)
 {
     assert(self_p);
+    assert(self_p->wp);
 
     int i = 0;
     int nsel = 0;

@@ -140,7 +140,12 @@ int main(int argc, char *argv[])
 
     /* Create new instance of a server */
     tcp_server = tcp_server_new();
-    tcp_server_init(tcp_server, args.iface, args.port, my_connection_callback, args.workers);
+    ret = tcp_server_init(tcp_server, args.iface, args.port, my_connection_callback, args.workers);
+    if (ret == -1)
+    {
+        LOG_MSG(ERR, "Failed to initialize TCP server");
+        return -1;
+    }
 
     tcp_server_run(tcp_server);
 
