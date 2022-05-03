@@ -4,11 +4,13 @@
 import sys
 import socket
 import argparse
+import threading
 
 # --- Constatns --- #
 # Defaults
 DFLT_SERVER_IPV4_ADDR = "127.0.0.1"
 DFLT_SERVER_PORT = 9080
+DFLT_N_THREADS = 8
 
 # for color output
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
@@ -35,6 +37,24 @@ def printout(text, colour=BLACK):
     else:
         print(text)
 
+def client_thread(name, ipv4, port):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((ipv4, port))
+
+        data = f'Data from client {name}!'
+        printout('__client_%s__ Sending...' % name, YELLOW)
+        s.sendall(data.encode())
+        data = s.recv(1024)
+
+        printout('__client_%s__ Received:' % name, YELLOW)
+        printout(repr(data), YELLOW)
+        s.close()
+    except Exception as e:
+        printout(str(e), RED)
+        ret = -1
+        raise e
+
 # --- Main entry point --- #
 def main():
     parser = argparse.ArgumentParser()
@@ -53,25 +73,37 @@ def main():
         type=int,
         default=DFLT_SERVER_PORT
     )
+
+    parser.add_argument(
+        "-n",
+        "--n_threads",
+        help="Number of client threads",
+        type=int,
+        default=DFLT_N_THREADS
+    )
+
     args = parser.parse_args()
 
-    printout("Sending test data to %s:%d" % (args.ipv4, args.port), CYAN)
+    printout("Server address: %s:%d" % (args.ipv4, args.port), CYAN)
+    printout("Client Threads: %d" % (args.n_threads), CYAN)
 
     ret = 0
+    cli_threads = list()
     try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((args.ipv4, args.port))
 
-        data = 'Hello from py client!'
-        s.sendall(data.encode())
-        data = s.recv(1024)
+        for index in range(args.n_threads):
+            printout("Starting client thread: %d." % index, MAGENTA)
+            thread_id = threading.Thread(target=client_thread, args=(index, args.ipv4, args.port))
+            cli_threads.append(thread_id)
+            thread_id.start()
 
-        print('Received', repr(data))
-        s.close()
+        for index, thread in enumerate(cli_threads):
+            thread.join()
+            printout("Client thread %d done" % index, MAGENTA)
+
     except Exception as e:
         printout(str(e), RED)
         ret = -1
-        raise e
     finally:
         return ret
 
