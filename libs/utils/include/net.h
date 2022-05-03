@@ -21,6 +21,7 @@ typedef struct _ip_parser_t {
 
 /*************************** INTERFACE FUNCTIONS ******************************/
 int net_get_iface_index(int socket, const char *iface_name);
+int net_is_iface_up(const char *iface);
 int net_parse_ipv4(const char *ip_str, ip_parser_t *ip_out);
 int net_get_ipv4_from_iface(const char *iface, ip_parser_t *ipv4);
 

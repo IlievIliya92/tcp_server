@@ -29,6 +29,23 @@ int net_get_iface_index(int socket_fd, const char *iface_name)
     return ifr.ifr_ifindex;
 }
 
+int net_is_iface_up(const char *iface)
+{
+    struct ifreq ifr;
+    int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, iface, IFNAMSIZ -1);
+    if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
+       fprintf(stderr, "SIOCGIFFLAGS");
+    }
+
+    close(sock);
+
+    return !!(ifr.ifr_flags & IFF_UP);
+}
+
+
 int net_parse_ipv4(const char *ip_str, ip_parser_t *ip_out)
 {
   struct in_addr ipv4;

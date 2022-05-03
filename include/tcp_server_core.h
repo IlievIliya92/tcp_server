@@ -29,7 +29,7 @@ TCP_SERVER_EXPORT int
                     int workers_n);
 
 TCP_SERVER_EXPORT void
-    tcp_server_process(tcp_server_t *self_p);
+    tcp_server_run(tcp_server_t *self_p);
 
 TCP_SERVER_EXPORT void
     tcp_server_test (bool verbose);
