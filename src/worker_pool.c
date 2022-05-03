@@ -111,7 +111,7 @@ worker_pool_dispatch_worker(worker_pool_t *self_p,
         return pid;
     }
 
-    const char *worker_ps_name = "es_worker";
+    const char *worker_ps_name = "worker";
     prctl(PR_SET_NAME, (unsigned long) worker_ps_name);
 
     /* child's stream pipe to parent */
@@ -151,7 +151,6 @@ worker_pool_dispatch_worker(worker_pool_t *self_p,
              *  processing
              */
             callback((void *)&conn);
-
             close(conn);
         }
 

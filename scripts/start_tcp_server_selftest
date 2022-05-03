@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# ------------------------------ Paths & Constants ----------------------------#
+BUILD_DIR=${TCP_SERVER_PROJECT_ROOT}/build/
+
+${BUILD_DIR}/tcp_server_selftest --test tcp_server

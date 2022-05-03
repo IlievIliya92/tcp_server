@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# --- TERM Colours
+RED=`tput setaf 1`
+GREEN=`tput setaf 2`
+YELLOW=`tput setaf 3`
+BLUE=`tput setaf 4`
+MAGENTA=`tput setaf 5`
+CYAN=`tput setaf 6`
+RESET=`tput sgr0`
+
+. ./scripts/env
+. ./scripts/addtopath
+
+echo ""
+echo ${CYAN}"TCP Pre-forked server project"${RESET}
+
+echo ""
+echo ${YELLOW}"Project environment:"${RESET}
+echo ${RESET}"Project root: "${RESET}${CYAN}"${TCP_SERVER_PROJECT_ROOT}"${RESET}
+
+echo ""
+echo ${YELLOW}"Project Available Commands:${RESET}"
+echo "run_cmake                         - Build tool. Run run_cmake --help for more information"
+
+echo ""
+echo ${YELLOW}"Project Native Dev Available Commands:${RESET}"
+echo "start_tcp_server_selftest         - Run the  tcp server selftest"

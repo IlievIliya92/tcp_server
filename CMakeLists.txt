@@ -15,18 +15,21 @@ set_target_properties(tcp_server PROPERTIES
 target_include_directories(tcp_server PRIVATE src/)
 target_include_directories(tcp_server PUBLIC include/)
 
-install(TARGETS tcp_server
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-target_link_libraries(tcp_server LINK_PUBLIC log)
-target_link_libraries(tcp_server LINK_PUBLIC utils)
-
-install(TARGETS tcp_server DESTINATION ${CMAKE_INSTALL_BINDIR})
+########################################################################
+# libraries
+########################################################################
+add_subdirectory(libs/log)
+add_subdirectory(libs/utils)
 
 ########################################################################
 # executables
 ########################################################################
+
+
+target_link_libraries(tcp_server LINK_PUBLIC log)
+target_link_libraries(tcp_server LINK_PUBLIC utils)
+
+
 add_executable(
     tcp_server_selftest
     "src/tcp_server_selftest.c"
@@ -34,8 +37,9 @@ add_executable(
 
 target_include_directories(tcp_server_selftest PRIVATE src/)
 target_include_directories(tcp_server_selftest PUBLIC include/)
-target_include_directories(tcp_server_selftest PUBLIC ../log/include)
-target_include_directories(tcp_server_selftest PUBLIC ../utils/include)
+
+target_include_directories(tcp_server_selftest PUBLIC libs/log/include)
+target_include_directories(tcp_server_selftest PUBLIC libs/utils/include)
 if (TARGET tcp_server)
 
 target_link_libraries(tcp_server_selftest LINK_PRIVATE tcp_server)
@@ -43,3 +47,11 @@ target_link_libraries(tcp_server_selftest LINK_PUBLIC log)
 target_link_libraries(tcp_server_selftest LINK_PUBLIC utils)
 
 endif()
+
+
+install(TARGETS tcp_server
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+
+install(TARGETS tcp_server DESTINATION ${CMAKE_INSTALL_BINDIR})

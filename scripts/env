@@ -1,0 +1,3 @@
+#!/bin/bash
+
+export TCP_SERVER_PROJECT_ROOT=$(pwd)

@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# ------------------------------ Paths & Constants ----------------------------#
+BUILD_DIR=${TCP_SERVER_PROJECT_ROOT}/build/
+PROJECT_DIR=${TCP_SERVER_PROJECT_ROOT}
+ROOT_CMAKE_DIR=${TCP_SERVER_PROJECT_ROOT}
+
+SELFTEST_BINARY_NAME=tcp_server_selftest
+#------------------------------- Usage ----------------------------------------#
+usage() {
+    printf "run_cmake { build | clean  }\n"
+    exit 1
+}
+
+#------------------------- BUILD /CLEAN  --------------------------------------#
+build() {
+    if [ -d "$1" ]
+    then
+        cd $1
+        echo "${PWD}"
+    else
+        echo "Setting up build directory"
+        mkdir -p $1
+        cd $1
+    fi
+
+    if [ $2 = "cross" ]; then
+        echo "Running cross compiling (aarch64)"
+        # source Cross compile SDK toolchain here
+        # source /opt/....
+        cmake ..
+        make
+    else
+        echo "Running native build (x86)"
+        cmake ${ROOT_CMAKE_DIR} ..
+        make
+        # Set extended capbilities for native run so we can bind/open sockets
+        # without sudoing
+        echo "Setting extended capabilities for '${SELFTEST_BINARY_NAME}' "
+        sudo setcap "CAP_SYS_NICE+eip CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip" ${BUILD_DIR}/${SELFTEST_BINARY_NAME}
+    fi
+}
+
+clean() {
+    cd ${BUILD_DIR}
+    make clean
+}
+
+#--------------------------- Entry point --------------------------------------#
+if [ $# -lt 1 ]; then
+    usage
+fi
+
+if [ $1 = "build" ]; then
+    build "${BUILD_DIR}" $2
+elif [ $1 = "clean" ]; then
+    clean
+else
+  echo "The action $1 is not supported!"
+  usage
+fi
+
+cd ${PROJECT_DIR} &> /dev/null
