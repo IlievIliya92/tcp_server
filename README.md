@@ -1,6 +1,6 @@
 # Simple TCP pre-forked server
 
-Example implementation of TCP preforked server with only the parent process
+Example implementation of a TCP preforked server with only the parent process
 calling accept and "passing" the connected socket to a free child worker.
 
 The server is wrapped in shared object lib (libtcp_server.so.1.0.0)
