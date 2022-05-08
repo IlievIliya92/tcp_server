@@ -1,3 +1,7 @@
+---
+hide-toc: true
+---
+
 # TCP Server
 
 The purpouse of this documentation is to provide guidance on how to install and
@@ -9,13 +13,25 @@ calling accept and "passing" the connected socket to a free child worker.
 The software architecture is based on the guidance provided by the
 [Unix Network Programming, Volume 1: The Sockets Networking API (3rd Edition)](https://www.amazon.com/Unix-Network-Programming-Sockets-Networking/dp/0131411551) - *Chapter 30. Client-Server Design Alternatives*
 
-The repository layout is heavily influenced by the [zproject](https://github.com/zeromq/zproject).
+The repository [layout](./contributing/internals) is heavily influenced by the [zproject](https://github.com/zeromq/zproject).
+
+If you need any help or assistance regarding any of the topics realted to the project
+feel free to address your inquiries using the [issues list](https://github.com/IlievIliya92/tcp_server/issues) or via email to [iliyailiev3592@gmail.com](mailto:iliyailiev3592@gmail.com).
 
 ```{toctree}
-:caption: TCP Server
+:caption: Usage
 :hidden:
 
 quickstart
 tcp_server
 examples
+```
+
+```{toctree}
+:caption: Development
+:hidden:
+
+contributing/index
+changelog
+license
 ```

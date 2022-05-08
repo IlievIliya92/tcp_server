@@ -1,0 +1,59 @@
+# Code base contributions
+
+Contributions of code (either fixing bugs or adding new functionalities) are more than welcome.
+However, please consider these basic rules and guidelines about submitting new changes.
+If you follow these, you’ll help make our common efforts to make this whole thing work
+a bit more easier.
+
+## Don’t include irrelevant changes
+
+In particular, don’t include formatting, coding style or whitespace changes to
+bits of code that would otherwise not be touched by the patch. (It’s OK to fix
+coding style issues in the immediate area (few lines) of the lines you’re changing.)
+If you think a section of code really does need a reindent or other
+large-scale style fix, submit this as a separate patch which makes no semantic
+changes; don’t put it in the same patch as your bug fix/ new feature implementation.
+
+## Split up long commits
+
+Split up longer commits into a patch series of logical code changes.
+Each change should compile and execute successfully. For instance, don’t add a
+file to the makefile in patch one and then add the file itself in patch two.
+(This rule is here so that people can later use tools like git bisect without
+hitting points in the commit history where the build doesn’t work for reasons
+unrelated to the bug they’re chasing.) Put documentation first, not last, so that
+someone reading the series can do a clean-room evaluation of the documentation,
+then validate that the code matched the documentation. A commit message that mentions
+“Also, …” is often a good candidate for splitting into multiple commits.
+For more thoughts on properly splitting commits and writing good commit messages,
+see [this advice from OpenStack](https://wiki.openstack.org/wiki/GitCommitMessages).
+
+## Write a meaningful commit message
+
+Commit messages should be meaningful and should stand on their own as a
+historical record of why the changes you applied were necessary or useful.
+
+We follow some basic rules which will be examined by the example showed below.
+The following is a snippet from the tcp_server repository.
+
+```
+* 762a157 - (6 days ago) tcp_server: core: Add worker pool to the server core - Iliya Iliev
+* 54df55d - (6 days ago) tcp_server: Add worker pool selftest - Iliya Iliev
+```
+
+The first part of the commit (delimited by the ':' symbol) associates it with the
+module/system that it is related to. Having a well organised git log and a modular
+based source code is helpfull to back track bugs easily since it provides clues
+for the relevant changes that are related to an issue.
+
+## Test your changes
+
+Although there is a continuous integration service that attempts to test newly added commits,
+it still saves everyone time if you have already tested that the software contributed compiles and works.
+
+## Reviews
+
+Peer review only works if everyone chips in a bit of review time.
+A good goal is to try to review at least as many patches from others as what you submit.
+Don’t worry if you don’t know the code base. It’s perfectly fine to admit when
+your review is weak because you are unfamiliar with the code.

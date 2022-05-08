@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code base contributions &mdash; TCP Server</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/tabs.js"></script>
+        <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Changelog" href="../changelog.html" />
+    <link rel="prev" title="Internals" href="internals.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: rgba(52,49,49,1) 100%;" >
+            <a href="../index.html" class="icon icon-home"> TCP Server
+          </a>
+              <div class="version">
+                v1.0.0.
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tcp_server.html">TCP Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Contributing</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="internals.html">Internals</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Code base contributions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgba(52,49,49,1) 100%;" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TCP Server</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Contributing</a> &raquo;</li>
+      <li>Code base contributions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="code-base-contributions">
+<h1>Code base contributions<a class="headerlink" href="#code-base-contributions" title="Permalink to this headline"></a></h1>
+<p>Contributions of code (either fixing bugs or adding new functionalities) are more than welcome.
+However, please consider these basic rules and guidelines about submitting new changes.
+If you follow these, you’ll help make our common efforts to make this whole thing work
+a bit more easier.</p>
+<section id="dont-include-irrelevant-changes">
+<h2>Don’t include irrelevant changes<a class="headerlink" href="#dont-include-irrelevant-changes" title="Permalink to this headline"></a></h2>
+<p>In particular, don’t include formatting, coding style or whitespace changes to
+bits of code that would otherwise not be touched by the patch. (It’s OK to fix
+coding style issues in the immediate area (few lines) of the lines you’re changing.)
+If you think a section of code really does need a reindent or other
+large-scale style fix, submit this as a separate patch which makes no semantic
+changes; don’t put it in the same patch as your bug fix/ new feature implementation.</p>
+</section>
+<section id="split-up-long-commits">
+<h2>Split up long commits<a class="headerlink" href="#split-up-long-commits" title="Permalink to this headline"></a></h2>
+<p>Split up longer commits into a patch series of logical code changes.
+Each change should compile and execute successfully. For instance, don’t add a
+file to the makefile in patch one and then add the file itself in patch two.
+(This rule is here so that people can later use tools like git bisect without
+hitting points in the commit history where the build doesn’t work for reasons
+unrelated to the bug they’re chasing.) Put documentation first, not last, so that
+someone reading the series can do a clean-room evaluation of the documentation,
+then validate that the code matched the documentation. A commit message that mentions
+“Also, …” is often a good candidate for splitting into multiple commits.
+For more thoughts on properly splitting commits and writing good commit messages,
+see <a class="reference external" href="https://wiki.openstack.org/wiki/GitCommitMessages">this advice from OpenStack</a>.</p>
+</section>
+<section id="write-a-meaningful-commit-message">
+<h2>Write a meaningful commit message<a class="headerlink" href="#write-a-meaningful-commit-message" title="Permalink to this headline"></a></h2>
+<p>Commit messages should be meaningful and should stand on their own as a
+historical record of why the changes you applied were necessary or useful.</p>
+<p>We follow some basic rules which will be examined by the example showed below.
+The following is a snippet from the tcp_server repository.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="mi">762</span><span class="n">a157</span> <span class="o">-</span> <span class="p">(</span><span class="mi">6</span> <span class="n">days</span> <span class="n">ago</span><span class="p">)</span> <span class="n">tcp_server</span><span class="p">:</span> <span class="n">core</span><span class="p">:</span> <span class="n">Add</span> <span class="n">worker</span> <span class="n">pool</span> <span class="n">to</span> <span class="n">the</span> <span class="n">server</span> <span class="n">core</span> <span class="o">-</span> <span class="n">Iliya</span> <span class="n">Iliev</span>
+<span class="o">*</span> <span class="mi">54</span><span class="n">df55d</span> <span class="o">-</span> <span class="p">(</span><span class="mi">6</span> <span class="n">days</span> <span class="n">ago</span><span class="p">)</span> <span class="n">tcp_server</span><span class="p">:</span> <span class="n">Add</span> <span class="n">worker</span> <span class="n">pool</span> <span class="n">selftest</span> <span class="o">-</span> <span class="n">Iliya</span> <span class="n">Iliev</span>
+</pre></div>
+</div>
+<p>The first part of the commit (delimited by the ‘:’ symbol) associates it with the
+module/system that it is related to. Having a well organised git log and a modular
+based source code is helpfull to back track bugs easily since it provides clues
+for the relevant changes that are related to an issue.</p>
+</section>
+<section id="test-your-changes">
+<h2>Test your changes<a class="headerlink" href="#test-your-changes" title="Permalink to this headline"></a></h2>
+<p>Although there is a continuous integration service that attempts to test newly added commits,
+it still saves everyone time if you have already tested that the software contributed compiles and works.</p>
+</section>
+<section id="reviews">
+<h2>Reviews<a class="headerlink" href="#reviews" title="Permalink to this headline"></a></h2>
+<p>Peer review only works if everyone chips in a bit of review time.
+A good goal is to try to review at least as many patches from others as what you submit.
+Don’t worry if you don’t know the code base. It’s perfectly fine to admit when
+your review is weak because you are unfamiliar with the code.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="internals.html" class="btn btn-neutral float-left" title="Internals" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Iliya Iliev.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-# Contributing code
+# Code base contributions
 
 Contributions of code (either fixing bugs or adding new functionalities) are more than welcome.
 However, please consider these basic rules and guidelines about submitting new changes.

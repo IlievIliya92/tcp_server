@@ -1,6 +1,9 @@
 TCP Server
 ==========
 
+The tcp_server class encapsulates the server core which provides methods
+to create, initialize and start a TCP pre-forked server.
+
 Constructor
 -----------
 

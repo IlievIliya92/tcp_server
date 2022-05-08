@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TCP Server &mdash; TCP Server</title>
+  <title>Changelog &mdash; TCP Server</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
@@ -25,7 +25,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Quickstart" href="quickstart.html" /> 
+    <link rel="next" title="License" href="license.html" />
+    <link rel="prev" title="Code base contributions" href="contributing/code.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -33,7 +34,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: rgba(52,49,49,1) 100%;" >
-            <a href="#" class="icon icon-home"> TCP Server
+            <a href="index.html" class="icon icon-home"> TCP Server
           </a>
               <div class="version">
                 v1.0.0.
@@ -53,9 +54,9 @@
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="contributing/index.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 </ul>
 
@@ -65,15 +66,15 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: rgba(52,49,49,1) 100%;" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">TCP Server</a>
+          <a href="index.html">TCP Server</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content style-external-links">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>TCP Server</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Changelog</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -82,28 +83,24 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="tcp-server">
-<h1>TCP Server<a class="headerlink" href="#tcp-server" title="Permalink to this headline"></a></h1>
-<p>The purpouse of this documentation is to provide guidance on how to install and
-use the <a class="reference external" href="https://github.com/IlievIliya92/tcp_server">tcp pre-forked server</a></p>
-<p>The project itself implements a TCP preforked server with only the parent process
-calling accept and “passing” the connected socket to a free child worker.</p>
-<p>The software architecture is based on the guidance provided by the
-<a class="reference external" href="https://www.amazon.com/Unix-Network-Programming-Sockets-Networking/dp/0131411551">Unix Network Programming, Volume 1: The Sockets Networking API (3rd Edition)</a> - <em>Chapter 30. Client-Server Design Alternatives</em></p>
-<p>The repository <a class="reference internal" href="contributing/internals.html"><span class="doc std std-doc">layout</span></a> is heavily influenced by the <a class="reference external" href="https://github.com/zeromq/zproject">zproject</a>.</p>
-<p>If you need any help or assistance regarding any of the topics realted to the project
-feel free to address your inquiries using the <a class="reference external" href="https://github.com/IlievIliya92/tcp_server/issues">issues list</a> or via email to <a class="reference external" href="mailto:iliyailiev3592&#37;&#52;&#48;gmail&#46;com">iliyailiev3592<span>&#64;</span>gmail<span>&#46;</span>com</a>.</p>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline"></a></h1>
+<!--
+versioning: Major.Minor.Patch
+-->
+<section id="v1-0-0">
+<h2>2022.08.05. v1.0.0.<a class="headerlink" href="#v1-0-0" title="Permalink to this headline"></a></h2>
+<p><span class="sd-sphinx-override sd-badge sd-outline-success sd-text-success">stable</span> <span class="sd-sphinx-override sd-badge sd-outline-info sd-text-info">latest</span></p>
+<p>Initial release.</p>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="quickstart.html" class="btn btn-neutral float-right" title="Quickstart" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="contributing/code.html" class="btn btn-neutral float-left" title="Code base contributions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="license.html" class="btn btn-neutral float-right" title="License" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
