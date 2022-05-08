@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tcp_server_core.c &mdash; TCP Server</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/tabs.js"></script>
+        <script src="../_static/design-tabs.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> TCP Server
+          </a>
+              <div class="version">
+                v1.0.0.
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">TCP Server</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tcp_server.html">TCP Server</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TCP Server</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>tcp_server_core.c</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tcp_server_core.c</h1><div class="highlight"><pre>
+<span></span><span class="cm">/*</span>
+<span class="cm">    =========================================================================</span>
+<span class="cm">    =========================================================================</span>
+<span class="cm">*/</span><span class="w"></span>
+
+<span class="cm">/******************************** INCLUDE FILES *******************************/</span><span class="w"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;unistd.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;signal.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;errno.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;assert.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sys/socket.h&gt;</span><span class="c1"> /* socket */</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;arpa/inet.h&gt;</span><span class="c1"> /* endiaanes ntoh, hton utils */</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;linux/if_packet.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;tcp_server_classes.h&quot;</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;generic_t.h&quot;</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;worker_pool.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;utils.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;log.h&quot;</span><span class="cp"></span>
+<div class="viewcode-block" id="c.MODULE_NAME"><span class="cm">/******************************** LOCAL DEFINES *******************************/</span><span class="w"></span>
+<span class="cp">#define MODULE_NAME  &quot;tcp_server_server_core&quot;</span></div>
+
+<div class="viewcode-block" id="c.TCP_SERVER_BACKLOG"><span class="cp">#define TCP_SERVER_BACKLOG  10</span></div>
+<div class="viewcode-block" id="c._tcp_server_t"><span class="cm">/*********************************** TYPEDEFS *********************************/</span><span class="w"></span>
+<span class="c1">//  Structure of our class</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">_tcp_server_t</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="viewcode-block" id="c._tcp_server_t.sock_fd"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">sock_fd</span><span class="p">;</span><span class="w"></span></div>
+
+<div class="viewcode-block" id="c._tcp_server_t.workers_n"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">workers_n</span><span class="p">;</span><span class="w"></span></div>
+<div class="viewcode-block" id="c._tcp_server_t.wp"><span class="w">    </span><span class="n">worker_pool_t</span><span class="w"> </span><span class="o">*</span><span class="n">wp</span><span class="p">;</span><span class="w"></span></div>
+
+<span class="w">    </span><span class="cm">/* select mechanism */</span><span class="w"></span>
+<div class="viewcode-block" id="c._tcp_server_t.masterset"><span class="w">    </span><span class="n">fd_set</span><span class="w"> </span><span class="n">masterset</span><span class="p">;</span><span class="w"></span></div>
+
+<div class="viewcode-block" id="c._tcp_server_t.maxfdp"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">maxfdp</span><span class="p">;</span><span class="w"></span></div>
+<div class="viewcode-block" id="c._tcp_server_t.nready"><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">nready</span><span class="p">;</span><span class="w"></span></div>
+<div class="viewcode-block" id="c._tcp_server_t.select_tv"><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timeval</span><span class="w"> </span><span class="n">select_tv</span><span class="p">;</span><span class="w"></span></div>
+<span class="p">};</span><span class="w"></span></div>
+
+<span class="cm">/************************* LOCAL FUNCTIONS DEFINITIONS ************************/</span><span class="w"></span>
+
+<div class="viewcode-block" id="c.SERVER_STOP"><span class="cm">/********************************* LOCAL DATA *********************************/</span><span class="w"></span>
+<span class="cm">/* State (volatile since we are stopping this from keyboard isr)*/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="k">volatile</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">SERVER_STOP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span></div>
+<span class="cm">/******************************* INTERFACE DATA *******************************/</span><span class="w"></span>
+
+<div class="viewcode-block" id="c.tcp_server_sig_hndlr"><span class="cm">/******************************* LOCAL FUNCTIONS ******************************/</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">tcp_server_sig_hndlr</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">signum</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">SERVER_STOP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Server shuting down...&quot;</span><span class="p">);</span><span class="w"></span>
+
+<span class="p">}</span><span class="w"></span></div>
+<span class="cm">/******************************* PRIVATE METHODS ******************************/</span><span class="w"></span>
+
+<span class="c1">//  --------------------------------------------------------------------------</span>
+<span class="c1">// Constructor</span>
+<div class="viewcode-block" id="c.tcp_server_new"><a class="viewcode-back" href="../tcp_server.html#c.tcp_server_new">[docs]</a><span class="cm">/**</span>
+<span class="cm"> *</span>
+<span class="cm"> * Create new tcp_server object.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *     On success new tcp_server object, or NULL if the new tcp server could not be created.</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="w"></span>
+<span class="nf">tcp_server_new</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">smalloc</span><span class="w"> </span><span class="p">(</span><span class="k">sizeof</span><span class="w"> </span><span class="p">(</span><span class="n">tcp_server_t</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">TRACE</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;TCP Server created [%p]&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">self</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span></div>
+
+
+<span class="c1">//  --------------------------------------------------------------------------</span>
+<span class="c1">// Destructor</span>
+<div class="viewcode-block" id="c.tcp_server_destroy"><a class="viewcode-back" href="../tcp_server.html#c.tcp_server_destroy">[docs]</a><span class="cm">/**</span>
+<span class="cm"> *</span>
+<span class="cm"> * Destroy tcp_server object. You must use this for any tcp server created via the</span>
+<span class="cm"> * tcp_server_new method.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      self_p (tcp_server_t **): pointer to tcp_server_t object reference,</span>
+<span class="cm"> *                               so the destructor can nullify it</span>
+<span class="cm"> *</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      None (void)</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">void</span><span class="w"></span>
+<span class="nf">tcp_server_destroy</span><span class="w"> </span><span class="p">(</span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">**</span><span class="n">self_p</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="w"> </span><span class="p">(</span><span class="n">self_p</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">self_p</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">self_p</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="cm">/*</span>
+<span class="cm">         * Free class properties here</span>
+<span class="cm">         */</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">close</span><span class="p">(</span><span class="n">self</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">worker_pool_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">self</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">TRACE</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Destroying TCP Server [%p]&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="c1">//  Free object itself</span>
+<span class="w">        </span><span class="n">sfree</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="o">*</span><span class="n">self_p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span></div>
+
+
+<div class="viewcode-block" id="c.tcp_server_sock_set_rcv_timeout"><span class="kt">int</span><span class="w"></span>
+<span class="nf">tcp_server_sock_set_rcv_timeout</span><span class="p">(</span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="n">self_p</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                </span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">self_p</span><span class="p">);</span><span class="w"></span>
+
+<span class="p">}</span><span class="w"></span></div>
+
+<div class="viewcode-block" id="c.tcp_server_sock_set_send_timeout"><span class="kt">int</span><span class="w"></span>
+<span class="nf">tcp_server_sock_set_send_timeout</span><span class="p">(</span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="n">self_p</span><span class="p">,</span><span class="w"></span>
+<span class="w">                                </span><span class="kt">int</span><span class="w"> </span><span class="n">timeout</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">self_p</span><span class="p">);</span><span class="w"></span>
+
+<span class="p">}</span><span class="w"></span></div>
+
+<div class="viewcode-block" id="c.tcp_server_init"><a class="viewcode-back" href="../tcp_server.html#c.tcp_server_init">[docs]</a><span class="cm">/**</span>
+<span class="cm"> *</span>
+<span class="cm"> * Initialize properties of a tcp_server object.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      self_p (tcp_server_t *): reference to a tcp_server_t object</span>
+<span class="cm"> *      server_iface (const char *): name of the network interface to which the server</span>
+<span class="cm"> *                                   will bind.</span>
+<span class="cm"> *      server_port (int): listening port of the server</span>
+<span class="cm"> *      callback (voidVoid_ptr_t): connection callback</span>
+<span class="cm"> *      workers_n (int): number of workers to dispatch</span>
+<span class="cm"> *</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      On 0 on success, -1 on failiure.</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">int</span><span class="w"></span>
+<span class="nf">tcp_server_init</span><span class="p">(</span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="n">self_p</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">server_iface</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">server_port</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">voidVoid_ptr_t</span><span class="w"> </span><span class="n">callback</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">workers_n</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">self_p</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">server_iface</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr_in</span><span class="w"> </span><span class="n">saddr</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ip_parser_t</span><span class="w"> </span><span class="n">sipv4</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">net_get_ipv4_from_iface</span><span class="p">(</span><span class="n">server_iface</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sipv4</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">ERR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Failed to obtain IP address for %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">server_iface</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="w"> </span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">ERR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Failed to create TCP server socket! (%s)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* reuse sock */</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">optval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setsockopt</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">,</span><span class="w"> </span><span class="n">SOL_SOCKET</span><span class="p">,</span><span class="w"> </span><span class="n">SO_REUSEADDR</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">optval</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">optval</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">ERR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Failed to set sock option SO_REUSEADDR! (%s)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span><span class="w"></span>
+<span class="w">        </span><span class="n">close</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Bind the socket */</span><span class="w"></span>
+<span class="w">    </span><span class="n">saddr</span><span class="p">.</span><span class="n">sin_family</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AF_INET</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">saddr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inet_addr</span><span class="p">(</span><span class="n">sipv4</span><span class="p">.</span><span class="n">ip_str</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">saddr</span><span class="p">.</span><span class="n">sin_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">htons</span><span class="p">(</span><span class="n">server_port</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bind</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">saddr</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">saddr</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">ERR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;bind failed! (%s)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span><span class="w"></span>
+<span class="w">        </span><span class="n">close</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listen</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">,</span><span class="w"> </span><span class="n">TCP_SERVER_BACKLOG</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">ERR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;listen failed! (%s)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="p">));</span><span class="w"></span>
+<span class="w">        </span><span class="n">close</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* Clear the descriptor set */</span><span class="w"></span>
+<span class="w">    </span><span class="n">FD_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">masterset</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">FD_SET</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">masterset</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">maxfdp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Create worker pool */</span><span class="w"></span>
+<span class="w">    </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">workers_n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">workers_n</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">worker_pool_new</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">workers_n</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Prefork all the workers */</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">workers_n</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="cm">/* parent returns */</span><span class="w"></span>
+<span class="w">        </span><span class="n">worker_pool_dispatch_worker</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">,</span><span class="w"> </span><span class="n">callback</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">worker_pool_worker_fd_set</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">masterset</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">maxfdp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">max</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">maxfdp</span><span class="p">,</span><span class="w"> </span><span class="n">worker_pool_worker_fd_get</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+
+<span class="w">    </span><span class="cm">/* Register the sig handler */</span><span class="w"></span>
+<span class="w">    </span><span class="n">signal</span><span class="p">(</span><span class="n">SIGINT</span><span class="p">,</span><span class="w"> </span><span class="n">tcp_server_sig_hndlr</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span></div>
+
+<div class="viewcode-block" id="c.tcp_server_run"><a class="viewcode-back" href="../tcp_server.html#c.tcp_server_run">[docs]</a><span class="cm">/**</span>
+<span class="cm"> *</span>
+<span class="cm"> * Server main processing loop.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Parameters:</span>
+<span class="cm"> *      self_p (tcp_server_t *): reference to a tcp_server_t object</span>
+<span class="cm"> *</span>
+<span class="cm"> * Returns:</span>
+<span class="cm"> *      None (void)</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="kt">void</span><span class="w"></span>
+<span class="nf">tcp_server_run</span><span class="p">(</span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="n">self_p</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">self_p</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">nsel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">conn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">fd_set</span><span class="w"> </span><span class="n">rset</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr_in</span><span class="w"> </span><span class="n">src_addr</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">socklen_t</span><span class="w"> </span><span class="n">src_addr_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">src_addr</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Start the server loop */</span><span class="w"></span>
+<span class="w">    </span><span class="n">SERVER_STOP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"></span>
+<span class="w">    </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">rset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">masterset</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">worker_pool_workers_avail_get</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="cm">/* turn off if no available children */</span><span class="w"></span>
+<span class="w">            </span><span class="n">FD_CLR</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rset</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">select_tv</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">select_tv</span><span class="p">.</span><span class="n">tv_usec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">nsel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">select</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">maxfdp</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rset</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SERVER_STOP</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">FD_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rset</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="cm">/* Check for new connections */</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">FD_ISSET</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rset</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">conn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">accept</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">sock_fd</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">sockaddr</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">src_addr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">src_addr_len</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;New connection from: %s:%d&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                   </span><span class="n">inet_ntoa</span><span class="p">(</span><span class="n">src_addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">),</span><span class="w"></span>
+<span class="w">                   </span><span class="n">ntohs</span><span class="p">(</span><span class="n">src_addr</span><span class="p">.</span><span class="n">sin_port</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">            </span><span class="n">worker_pool_workers_submit_conn</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">,</span><span class="w"> </span><span class="n">conn</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="n">close</span><span class="p">(</span><span class="n">conn</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">--</span><span class="n">nsel</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="k">continue</span><span class="p">;</span><span class="w">   </span><span class="cm">/* all done with select() results */</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="cm">/* Find any newly-available children */</span><span class="w"></span>
+<span class="w">        </span><span class="n">worker_pool_workers_find_free</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">,</span><span class="w"> </span><span class="n">nsel</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rset</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">worker_pool_workers_terminate</span><span class="p">(</span><span class="n">self_p</span><span class="o">-&gt;</span><span class="n">wp</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span></div>
+
+<span class="c1">//  --------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="c.server_connection_cb"><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">server_connection_cb</span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">conn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rx_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="n">rx_buffer</span><span class="p">[</span><span class="mi">1500</span><span class="p">];</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">conn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">args</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">rx_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span><span class="w"> </span><span class="n">rx_buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1500</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">hexdump</span><span class="p">(</span><span class="s">&quot;RX Buffer&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rx_buffer</span><span class="p">,</span><span class="w"> </span><span class="n">rx_bytes</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Just loopback */</span><span class="w"></span>
+<span class="w">    </span><span class="n">write</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span><span class="w"> </span><span class="n">rx_buffer</span><span class="p">,</span><span class="w"> </span><span class="n">rx_bytes</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span></div>
+
+<div class="viewcode-block" id="c.tcp_server_test"><span class="kt">void</span><span class="w"></span>
+<span class="nf">tcp_server_test</span><span class="w"> </span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">verbose</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">LOG_MSG</span><span class="p">(</span><span class="n">TRACE</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Running %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">__func__</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">iface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;lo&quot;</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">9080</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">workers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Create new instance of a server */</span><span class="w"></span>
+<span class="w">    </span><span class="n">tcp_server_t</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tcp_server_new</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="n">tcp_server_init</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">iface</span><span class="p">,</span><span class="w"> </span><span class="n">port</span><span class="p">,</span><span class="w"> </span><span class="n">server_connection_cb</span><span class="p">,</span><span class="w"> </span><span class="n">workers</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">tcp_server_run</span><span class="p">(</span><span class="n">self</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="cm">/* Destroy server */</span><span class="w"></span>
+<span class="w">    </span><span class="n">tcp_server_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">self</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Iliya Iliev.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
