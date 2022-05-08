@@ -7,7 +7,7 @@ The project itself implements a TCP preforked server with only the parent proces
 calling accept and "passing" the connected socket to a free child worker.
 
 The software architecture is based on the guidance provided by the
-!(Unix Network Programming, Volume 1: The Sockets Networking API (3rd Edition))[https://www.amazon.com/Unix-Network-Programming-Sockets-Networking/dp/0131411551] - *Chapter 30. Client-Server Design Alternatives*
+[Unix Network Programming, Volume 1: The Sockets Networking API (3rd Edition)](https://www.amazon.com/Unix-Network-Programming-Sockets-Networking/dp/0131411551) - *Chapter 30. Client-Server Design Alternatives*
 
 ```{toctree}
 :caption: TCP Server
