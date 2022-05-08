@@ -10,7 +10,7 @@ import threading
 # Defaults
 DFLT_SERVER_IPV4_ADDR = "127.0.0.1"
 DFLT_SERVER_PORT = 9080
-DFLT_N_THREADS = 8
+DFLT_N_THREADS = 3
 
 # for color output
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
