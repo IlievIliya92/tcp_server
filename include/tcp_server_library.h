@@ -25,7 +25,7 @@
 
 //  Opaque class structures to allow forward references
 typedef struct _tcp_server_t tcp_server_t;
-#define TCP_SERVER_DEFINED
+#define TCP_SERVER_CORE_DEFINED
 
 //  Public classes, each with its own header file
 #include "tcp_server_core.h"

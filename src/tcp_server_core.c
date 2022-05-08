@@ -95,7 +95,7 @@ tcp_server_new (void)
  *                               so the destructor can nullify it
  *
  * Returns:
- *      On success new tcp_server object, on failiure NULL pointer.
+ *      None (void)
  */
 void
 tcp_server_destroy (tcp_server_t **self_p)
@@ -140,6 +140,21 @@ tcp_server_sock_set_send_timeout(tcp_server_t *self_p,
 
 }
 
+/**
+ *
+ * Initialize properties of a tcp_server object.
+ *
+ * Parameters:
+ *      self_p (tcp_server_t *): reference to a tcp_server_t object
+ *      server_iface (const char *): name of the network interface to which the server
+ *                                   will bind.
+ *      server_port (int): listening port of the server
+ *      callback (voidVoid_ptr_t): connection callback
+ *      workers_n (int): number of workers to dispatch
+ *
+ * Returns:
+ *      On 0 on success, -1 on failiure.
+ */
 int
 tcp_server_init(tcp_server_t *self_p,
                 const char *server_iface,
@@ -222,6 +237,16 @@ tcp_server_init(tcp_server_t *self_p,
     return 0;
 }
 
+/**
+ *
+ * Server main processing loop.
+ *
+ * Parameters:
+ *      self_p (tcp_server_t *): reference to a tcp_server_t object
+ *
+ * Returns:
+ *      None (void)
+ */
 void
 tcp_server_run(tcp_server_t *self_p)
 {
