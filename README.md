@@ -1,5 +1,8 @@
 # Simple TCP pre-forked server
 
+[![CMake](https://github.com/IlievIliya92/tcp_server/actions/workflows/cmake.yml/badge.svg?branch=main)](https://github.com/IlievIliya92/tcp_server/actions/workflows/cmake.yml)
+[![CodeQL](https://github.com/IlievIliya92/tcp_server/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/IlievIliya92/tcp_server/actions/workflows/codeql-analysis.yml)
+
 Example implementation of a TCP preforked server with only the parent process
 calling accept and "passing" the connected socket to a free child worker.
 
