@@ -111,4 +111,4 @@ version = __get_versh(['TCP_SERVER_VERSION_MAJOR',
 html_show_sourcelink = False
 html_static_path = ['_static']
 html_title = "TCP Server"
-html_logo = "https://cdn-icons-png.flaticon.com/512/4491/4491765.png"
+html_logo = "_static/logo.png"

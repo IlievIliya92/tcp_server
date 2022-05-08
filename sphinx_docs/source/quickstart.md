@@ -68,4 +68,4 @@ above report any issues using the [support page](./support). If you have managed
 to build and run the selftest reward yourself with a smile and remember a smile is a curve
 that sets things straight.
 
-![](https://cdn-icons-png.flaticon.com/512/7420/7420425.png)
+![](_static/smile.png)
