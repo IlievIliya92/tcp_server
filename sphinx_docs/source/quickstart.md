@@ -8,6 +8,11 @@
 
 This page describes the required steps to clone and build the libtcp_server.so shared lib.
 
+## Dependencies
+
+* cmake (>= 3.9) -- build system
+* python3 -- client side test application
+
 ## Initial Setup
 
 1. Clone the project using git
@@ -57,3 +62,10 @@ $ ./tcp_server_selftest
     By default the selftest starts the TCP server on port '9080', binding the server
     on the 'lo' (loopback) interface. The default number of pre-forked workers is 2.
 ```
+
+Congratulations! You made it this far. If the set up wasn't as smooth as described
+above report any issues using the [support page](./support). If you have managed
+to build and run the selftest reward yourself with a smile and remember a smile is a curve
+that sets things straight.
+
+![](https://cdn-icons-png.flaticon.com/512/7420/7420425.png)

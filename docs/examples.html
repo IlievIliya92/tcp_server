@@ -35,6 +35,7 @@
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: rgba(52,49,49,1) 100%;" >
             <a href="index.html" class="icon icon-home"> TCP Server
+            <img src="https://cdn-icons-png.flaticon.com/512/4491/4491765.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
                 v1.0.0.
@@ -58,6 +59,10 @@
 <li class="toctree-l1"><a class="reference internal" href="contributing/index.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
 </ul>
 
         </div>
@@ -133,8 +138,8 @@ function to process the TCP inbound connection.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The example callback function simple reads the inbound data and writes it back
-to the connection. (loopback). The ‘1500’ size of the <em>rx_buffer</em> is the standard
+<p>The example callback function simply reads the inbound data and writes it back
+to the connected client. (loopback). The ‘1500’ size of the <em>rx_buffer</em> is the standard
 MTU size of a standard packet sent over an Ethernet v2.</p>
 </div>
 <p>Initialize the server:</p>
@@ -210,9 +215,95 @@ no code will be executed until Ctrl+C (SIGINT) interrupt is received.</p>
 <span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p>For a fully functional client-server example check the examples directory.</p>
+</section>
+<section id="client-server-example">
+<h2>Client - Server Example<a class="headerlink" href="#client-server-example" title="Permalink to this headline"></a></h2>
+<p>The client - server example illustrates the server handling multiple client
+connections spawned from multiple threads.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The source code of the client-server example is located in the <code class="docutils literal notranslate"><span class="pre">examples/</span></code>
+directory of the project.</p>
+</div>
+<p>In order to run the example code the client and the server side should be started
+within a seprate shell (terminal) session.</p>
+<div class="tab-set docutils">
+<input checked="True" class="tab-input" id="tab-set--0-input--1" name="tab-set--0" type="radio"><label class="tab-label" for="tab-set--0-input--1">Starting Server</label><div class="tab-content docutils">
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"> $ </span><span class="nb">cd</span> build/examples
+<span class="gp"> $ </span>./tcp_server_example
+</pre></div>
+</div>
+</div>
+<input class="tab-input" id="tab-set--0-input--2" name="tab-set--0" type="radio"><label class="tab-label" for="tab-set--0-input--2">Running Client</label><div class="tab-content docutils">
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"> $ </span><span class="nb">cd</span> examples/client
+<span class="gp"> $ </span>python3 client.py
+</pre></div>
+</div>
+</div>
+</div>
+<p>The default console output should look similar to the one shown below:</p>
+<div class="tab-set docutils">
+<input checked="True" class="tab-input" id="tab-set--1-input--1" name="tab-set--1" type="radio"><label class="tab-label" for="tab-set--1-input--1">Server</label><div class="tab-content docutils">
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go"> [08/05/2022 23:05.36] DEBUG (106) main: Using default interface for the TCP server: &quot;lo&quot;</span>
+<span class="go"> [08/05/2022 23:05.36] WARNING (119) main: Invalid number of workers (0)!</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (120) main: Applying default number of workers: &quot;5&quot;</span>
+<span class="go"> [08/05/2022 23:05.36] WARNING (127) main: Invalid port number (0)!. Port range [1024;49151]</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (131) main: Applying default port number: &quot;9080&quot;</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (136) main: Server bind interface: lo</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (137) main: Server port: 9080</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (138) main: Workers: 5</span>
+<span class="go"> [08/05/2022 23:05.36] TRACE (80) tcp_server_server_core: TCP Server created [0x55f9f45b5b80]</span>
+<span class="go"> [08/05/2022 23:05.36] TRACE (60) worker_pool: Worker pool created [0x55f9f45b5c30]</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (127) worker_pool: Worker 112741 starting ...</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (127) worker_pool: Worker 112742 starting ...</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (127) worker_pool: Worker 112743 starting ...</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (127) worker_pool: Worker 112744 starting ...</span>
+<span class="go"> [08/05/2022 23:05.36] INFO (127) worker_pool: Worker 112745 starting ...</span>
+<span class="go"> [08/05/2022 23:05.40] INFO (293) tcp_server_server_core: New connection from: 127.0.0.1:39886</span>
+<span class="go"> [08/05/2022 23:05.40] INFO (293) tcp_server_server_core: New connection from: 127.0.0.1:39888</span>
+<span class="go">RX Buffer</span>
+<span class="go">0x000000: 44 61 74 61 20 66 72 6f 6d 20 63 6c 69 65 6e 74 Data from client</span>
+<span class="go">0x000010: 20 31 21                                         1!</span>
+<span class="go"> [08/05/2022 23:05.40] INFO (157) worker_pool: done</span>
+<span class="go">RX Buffer</span>
+<span class="go">0x000000: 44 61 74 61 20 66 72 6f 6d 20 63 6c 69 65 6e 74 Data from client</span>
+<span class="go">0x000010: 20 30 21                                         0!</span>
+<span class="go"> [08/05/2022 23:05.40] INFO (157) worker_pool: done</span>
+<span class="go"> [08/05/2022 23:05.40] INFO (293) tcp_server_server_core: New connection from: 127.0.0.1:39890</span>
+<span class="go">RX Buffer</span>
+<span class="go">0x000000: 44 61 74 61 20 66 72 6f 6d 20 63 6c 69 65 6e 74 Data from client</span>
+<span class="go">0x000010: 20 32 21                                         2!</span>
+<span class="go"> [08/05/2022 23:05.40] INFO (157) worker_pool: done</span>
+</pre></div>
+</div>
+</div>
+<input class="tab-input" id="tab-set--1-input--2" name="tab-set--1" type="radio"><label class="tab-label" for="tab-set--1-input--2">Client</label><div class="tab-content docutils">
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Server address: 127.0.0.1:9080</span>
+<span class="go">Client Threads: 3</span>
+<span class="go">Starting client thread: 0.</span>
+<span class="go">Starting client thread: 1.</span>
+<span class="go">__client_1__ Sending...</span>
+<span class="go">Starting client thread: 2.</span>
+<span class="go">__client_0__ Sending...</span>
+<span class="go">__client_0__ Received:</span>
+<span class="go">b&#39;Data from client 0!&#39;</span>
+<span class="go">__client_1__ Received:</span>
+<span class="go">__client_2__ Sending...</span>
+<span class="go">Client thread 0 done</span>
+<span class="go">b&#39;Data from client 1!&#39;</span>
+<span class="go">__client_2__ Received:</span>
+<span class="go">Client thread 1 done</span>
+<span class="go">b&#39;Data from client 2!&#39;</span>
+<span class="go">Client thread 2 done</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>For changing the server/client network routing (ipv4/server iface/port)
+use the respective binaries arguments (run <code class="docutils literal notranslate"><span class="pre">./tcp_server_example</span> <span class="pre">--help</span></code> and
+<code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">client.py</span> <span class="pre">--help</span></code> for more information)</p>
 </div>
 </section>
 </section>
