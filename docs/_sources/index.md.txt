@@ -14,7 +14,7 @@ The software architecture is based on the guidance provided by the
 [Unix Network Programming, Volume 1: The Sockets Networking API (3rd Edition)](https://www.amazon.com/Unix-Network-Programming-Sockets-Networking/dp/0131411551) - *Chapter 30. Client-Server Design Alternatives*
 
 The repository [layout](./contributing/internals) is heavily influenced by the [zproject](https://github.com/zeromq/zproject).
-Big credits to those guys from (iMatix)[https://github.com/imatix] for making C code scalable, easy to understand and reusable!
+Big credits to those guys from [iMatix](https://github.com/imatix) for making C code scalable, easy to understand and reusable!
 
 If you need any help or assistance regarding any of the topics realted to the project
 feel free to to address your inquiries using the [support page](./support).
