@@ -25,7 +25,7 @@ add_subdirectory(libs/utils)
 # DOCS
 ########################################################################
 if(DOCS)
-add_subdirectory(docs)
+add_subdirectory(sphinx_docs)
 endif()
 
 ########################################################################
