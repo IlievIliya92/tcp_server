@@ -7,6 +7,8 @@ The server is wrapped in shared object lib (libtcp_server.so.1.0.0)
 exporting the class & public methods making it easier to integrate with
 external application software.
 
+Project documentation can be found !(here)[https://ilieviliya92.github.io/tcp_server/].
+
 ## Getting Started
 
 1. Build

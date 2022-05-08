@@ -79,6 +79,10 @@
 <h1>TCP Server<a class="headerlink" href="#tcp-server" title="Permalink to this headline"></a></h1>
 <p>The purpouse of this documentation is to provide guidance on how to install and
 use the <a class="reference external" href="https://github.com/IlievIliya92/tcp_server">tcp pre-forked server</a></p>
+<p>The project itself implements a TCP preforked server with only the parent process
+calling accept and “passing” the connected socket to a free child worker.</p>
+<p>The software architecture is based on the guidance provided by the
+!(Unix Network Programming, Volume 1: The Sockets Networking API (3rd Edition))[https://www.amazon.com/Unix-Network-Programming-Sockets-Networking/dp/0131411551] - <em>Chapter 30. Client-Server Design Alternatives</em></p>
 <div class="toctree-wrapper compound">
 </div>
 </section>
