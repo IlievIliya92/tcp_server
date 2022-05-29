@@ -42,7 +42,7 @@ def client_thread(name, ipv4, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((ipv4, port))
 
-        data = f'Data from client {name}!'
+        data = 'Data from client {name}!'
         printout('__client_%s__ Sending...' % name, YELLOW)
         s.sendall(data.encode())
         data = s.recv(1024)

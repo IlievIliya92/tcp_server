@@ -55,11 +55,10 @@ target_link_libraries(tcp_server_selftest LINK_PUBLIC utils)
 
 endif()
 
-
-install(TARGETS tcp_server
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS tcp_server DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(TARGETS tcp_server
+#    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(TARGETS tcp_server DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 ########################################################################
 # examples

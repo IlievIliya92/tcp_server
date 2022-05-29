@@ -12,6 +12,6 @@ set_target_properties(utils PROPERTIES
 target_include_directories(utils PRIVATE src/)
 target_include_directories(utils PUBLIC include/)
 
-install(TARGETS utils
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(TARGETS utils
+#    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

@@ -12,6 +12,6 @@ set_target_properties(log PROPERTIES
 target_include_directories(log PRIVATE src/)
 target_include_directories(log PUBLIC include/)
 
-install(TARGETS log
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(TARGETS log
+#    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
