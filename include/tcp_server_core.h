@@ -25,8 +25,13 @@ TCP_SERVER_EXPORT int
     tcp_server_init(tcp_server_t *self_p,
                     const char *server_iface,
                     int server_port,
-                    void (*cb)(void *),
                     int workers_n);
+
+
+TCP_SERVER_EXPORT int
+tcp_server_dispatch(tcp_server_t *self_p,
+                    void (*cb) (int, void*),
+                    void *ctx);
 
 TCP_SERVER_EXPORT void
     tcp_server_run(tcp_server_t *self_p);

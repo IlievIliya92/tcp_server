@@ -60,7 +60,7 @@ static void tcp_server_sig_hndlr(int signum)
     LOG_MSG(INFO, "Server shuting down...");
 
 }
-/******************************* PRIVATE METHODS ******************************/
+/***********************************  METHODS *********************************/
 
 //  --------------------------------------------------------------------------
 // Constructor
@@ -149,7 +149,6 @@ tcp_server_sock_set_send_timeout(tcp_server_t *self_p,
  *      server_iface (const char *): name of the network interface to which the server
  *                                   will bind.
  *      server_port (int): listening port of the server
- *      callback (voidVoid_ptr_t): connection callback
  *      workers_n (int): number of workers to dispatch
  *
  * Returns:
@@ -159,13 +158,12 @@ int
 tcp_server_init(tcp_server_t *self_p,
                 const char *server_iface,
                 int server_port,
-                voidVoid_ptr_t callback,
-                int workers_n)
+                int workers_n
+                )
 {
     assert(self_p);
     assert(server_iface);
 
-    int i = 0;
     int ret = 0;
     struct sockaddr_in saddr;
     ip_parser_t sipv4;
@@ -217,15 +215,38 @@ tcp_server_init(tcp_server_t *self_p,
     FD_SET(self_p->sock_fd, &self_p->masterset);
     self_p->maxfdp = self_p->sock_fd + 1;
 
-    /* Create worker pool */
     self_p->workers_n = workers_n;
+
+    return 0;
+}
+
+/**
+ *
+ * Dispatch workers
+ *
+ * Parameters:
+ *      self_p (tcp_server_t *): reference to a tcp_server_t object
+ *      callback (voidVoid_ptr_t): connection callback
+ *      ctx (void *): connection context
+ *
+ * Returns:
+ *      On 0 on success, -1 on failiure.
+ */
+int
+tcp_server_dispatch(tcp_server_t *self_p,
+                    voidIntVoid_ptr_t callback,
+                    void *ctx)
+{
+    int i = 0;
+
+    /* Create worker pool */
     self_p->wp = worker_pool_new(self_p->workers_n);
 
     /* Prefork all the workers */
     for (i = 0; i < self_p->workers_n; i++)
     {
         /* parent returns */
-        worker_pool_dispatch_worker(self_p->wp, i, self_p->sock_fd, callback);
+        worker_pool_dispatch_worker(self_p->wp, i, self_p->sock_fd, callback, ctx);
         worker_pool_worker_fd_set(self_p->wp, i, &self_p->masterset);
         self_p->maxfdp = max(self_p->maxfdp, worker_pool_worker_fd_get(self_p->wp, i));
     }
@@ -309,13 +330,10 @@ tcp_server_run(tcp_server_t *self_p)
 }
 
 //  --------------------------------------------------------------------------
-static void server_connection_cb(void *args)
+static void server_connection_cb(int conn, void *ctx)
 {
-    int conn = -1;
     int rx_bytes = 0;
     char rx_buffer[1500];
-
-    conn = *(int *)args;
 
     rx_bytes = read(conn, rx_buffer, 1500);
     hexdump("RX Buffer", rx_buffer, rx_bytes);
@@ -335,7 +353,8 @@ tcp_server_test (bool verbose)
 
     /* Create new instance of a server */
     tcp_server_t *self = tcp_server_new();
-    tcp_server_init(self, iface, port, server_connection_cb, workers);
+    tcp_server_init(self, iface, port, workers);
+    tcp_server_dispatch(self, server_connection_cb, NULL);
 
     tcp_server_run(self);
 

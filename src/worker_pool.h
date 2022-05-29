@@ -43,7 +43,8 @@ pid_t
 worker_pool_dispatch_worker(worker_pool_t *self_p,
                             int worker_id,
                             int listenfd,
-                            voidVoid_ptr_t callback);
+                            voidIntVoid_ptr_t callback,
+                            void *ctx);
 
 int
 worker_pool_workers_avail_get(worker_pool_t *self_p);

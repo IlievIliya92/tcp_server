@@ -90,7 +90,8 @@ pid_t
 worker_pool_dispatch_worker(worker_pool_t *self_p,
                             int worker_id,
                             int listenfd,
-                            voidVoid_ptr_t callback)
+                            voidIntVoid_ptr_t callback,
+                            void *ctx)
 {
     int sockfd[2] = {0, 0};
     pid_t pid = 0;
@@ -150,7 +151,8 @@ worker_pool_dispatch_worker(worker_pool_t *self_p,
             /*
              *  processing
              */
-            callback((void *)&conn);
+            callback(conn, ctx);
+
             close(conn);
         }
 
